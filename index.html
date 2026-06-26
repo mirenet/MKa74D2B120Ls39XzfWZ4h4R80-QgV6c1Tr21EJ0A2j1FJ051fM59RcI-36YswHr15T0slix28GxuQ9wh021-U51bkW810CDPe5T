@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>YouTube Player</title>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+
+<style>
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: black;
+}
+
+#player {
+    width: 100%;
+    height: 100%;
+}
+</style>
+
+<script>
+let player;
+
+function getVideoId() {
+    return new URLSearchParams(window.location.search).get("v");
+}
+
+function onYouTubeIframeAPIReady() {
+
+    player = new YT.Player("player", {
+        width: "100%",
+        height: "100%",
+        videoId: getVideoId(),
+
+        playerVars: {
+            autoplay: 1,
+            controls: 0,
+            rel: 0,
+            playsinline: 1
+        },
+
+        events: {
+            onReady: onReady,
+            onStateChange: onStateChange
+        }
+    });
+
+}
+
+function onReady(event) {
+    event.target.playVideo();
+}
+
+function onStateChange(event) {
+
+    if (event.data === YT.PlayerState.ENDED) {
+
+        parent.postMessage({
+            type: "ended"
+        }, "*");
+
+    }
+
+}
+</script>
+
+</head>
+
+<body>
+
+<div id="player"></div>
+
+</body>
+</html>
