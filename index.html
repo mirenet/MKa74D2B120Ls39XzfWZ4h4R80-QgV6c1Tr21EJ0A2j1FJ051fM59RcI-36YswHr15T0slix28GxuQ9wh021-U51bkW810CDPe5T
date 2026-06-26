@@ -44,7 +44,8 @@ function onYouTubeIframeAPIReady() {
 
         events: {
             onReady: onReady,
-            onStateChange: onStateChange
+            onStateChange: onStateChange,
+            onError: onError 
         }
     });
 
@@ -55,23 +56,23 @@ function onReady(event) {
 }
 
 function onStateChange(event) {
-
     if (event.data === YT.PlayerState.ENDED) {
-
         parent.postMessage({
             type: "ended"
         }, "*");
-
     }
+}
 
+function onError(event) {
+    parent.postMessage({
+        type: "error",
+        errorCode: event.data 
+    }, "*");
 }
 </script>
 
 </head>
-
 <body>
-
 <div id="player"></div>
-
 </body>
 </html>
