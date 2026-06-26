@@ -56,26 +56,29 @@ function onReady(event) {
 
 function onStateChange(event) {
 
-    // Duration
+function onStateChange(event) {
+
+    // Duration - koristimo event.target umesto player
     if (event.data === YT.PlayerState.PLAYING) {
         
-        let sec = player.getDuration(); 
+        try {
+            let sec = event.target.getDuration(); 
 
-        parent.postMessage({
-            type: "videoDuration",
-            duration: sec
-        }, "*");
+            parent.postMessage({
+                type: "videoDuration",
+                duration: sec
+            }, "*");
+        } catch(err) {
+            console.error("Greška pri uzimanju trajanja:", err);
+        }
     }
 
-    // Ended
+    // Ended (Ovo ti već radi, ali čisto da stoji)
     if (event.data === YT.PlayerState.ENDED) {
-
         parent.postMessage({
             type: "ended"
         }, "*");
-
     }
-
 }
 
 </script>
