@@ -63,12 +63,25 @@ function onStateChange(event) {
     }
 }
 
+// Error Handling
+const errorMessages = {
+    2: "Wrong video-id!",
+    5: "Error with player!",
+    100: "Video not found!",
+    101: "Embed is not allowed!",
+    150: "Embed is not allowed!"
+};
+
 function onError(event) {
+    const code = event.data;
+    const message = errorMessages[code] || `Cant play video! (Error: ${code})`;
+
     parent.postMessage({
         type: "error",
-        errorCode: event.data 
+        message: message 
     }, "*");
 }
+
 </script>
 
 </head>
