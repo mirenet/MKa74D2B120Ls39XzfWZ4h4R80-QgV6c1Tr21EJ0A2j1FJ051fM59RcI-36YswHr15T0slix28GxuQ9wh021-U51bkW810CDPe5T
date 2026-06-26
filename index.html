@@ -51,11 +51,25 @@ function onYouTubeIframeAPIReady() {
 }
 
 function onReady(event) {
-    event.target.playVideo();
+
+    player = event.target;
+    player.playVideo();
+
+        // Duration
+        setTimeout(() => {
+
+        parent.postMessage({
+            type: "duration",
+            duration: player.getDuration()
+        }, "*");
+
+    }, 1000);
+
 }
 
 function onStateChange(event) {
 
+    // Video Ended
     if (event.data === YT.PlayerState.ENDED) {
 
         parent.postMessage({
