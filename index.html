@@ -56,6 +56,18 @@ function onReady(event) {
 
 function onStateChange(event) {
 
+    // Duration
+    if (event.data === YT.PlayerState.PLAYING) {
+        
+        let sec = player.getDuration(); 
+
+        parent.postMessage({
+            type: "videoDuration",
+            duration: sec
+        }, "*");
+    }
+
+    // Ended
     if (event.data === YT.PlayerState.ENDED) {
 
         parent.postMessage({
@@ -65,6 +77,7 @@ function onStateChange(event) {
     }
 
 }
+
 </script>
 
 </head>
