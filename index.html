@@ -23,20 +23,16 @@ html, body {
 
 <script>
 let player;
-let durationSent = false;
 
 function getVideoId() {
     return new URLSearchParams(window.location.search).get("v");
 }
 
-
 function onYouTubeIframeAPIReady() {
 
     player = new YT.Player("player", {
-
         width: "100%",
         height: "100%",
-
         videoId: getVideoId(),
 
         playerVars: {
@@ -50,70 +46,28 @@ function onYouTubeIframeAPIReady() {
             onReady: onReady,
             onStateChange: onStateChange
         }
-
     });
 
 }
 
-
 function onReady(event) {
-
-    player = event.target;
-
-    player.playVideo();
-
+    event.target.playVideo();
 }
-
 
 function onStateChange(event) {
 
-
-    // Video je krenuo - sada postoji duration
-    if (event.data === YT.PlayerState.PLAYING) {
-
-
-        if(!durationSent) {
-
-            durationSent = true;
-
-            let duration = player.getDuration();
-
-            console.log("Duration:", duration);
-
-
-            parent.postMessage({
-
-                type: "duration",
-                duration: duration
-
-            }, "*");
-
-        }
-
-    }
-
-
-
-    // Video završen
     if (event.data === YT.PlayerState.ENDED) {
 
-
         parent.postMessage({
-
             type: "ended"
-
         }, "*");
-
 
     }
 
-
 }
-
 </script>
 
 </head>
-
 
 <body>
 
