@@ -31,6 +31,8 @@ function getVideoId() {
 function onYouTubeIframeAPIReady() {
 
     player = new YT.Player("player", {
+    origin: window.location.origin,
+
         width: "100%",
         height: "100%",
         videoId: getVideoId(),
@@ -39,8 +41,7 @@ function onYouTubeIframeAPIReady() {
             autoplay: 1,
             controls: 0,
             rel: 0,
-            playsinline: 1,
-            origin: window.location.origin
+            playsinline: 1     
         },
 
         events: {
