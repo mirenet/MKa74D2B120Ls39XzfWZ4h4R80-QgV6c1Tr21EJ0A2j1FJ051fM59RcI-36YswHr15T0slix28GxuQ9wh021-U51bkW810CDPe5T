@@ -29,6 +29,7 @@ function getVideoId() {
 }
 
 function onYouTubeIframeAPIReady() {
+
     player = new YT.Player("player", {
         width: "100%",
         height: "100%",
@@ -47,6 +48,7 @@ function onYouTubeIframeAPIReady() {
             onError: onError 
         }
     });
+
 }
 
 function onReady(event) {
@@ -54,50 +56,12 @@ function onReady(event) {
 }
 
 function onStateChange(event) {
-    if (event.data === YT.PlayerState.PLAYING) {
-        parent.postMessage({
-            type: "playing"
-        }, "*");
-    } 
-    else if (event.data === YT.PlayerState.BUFFERING) {
-        parent.postMessage({
-            type: "buffering"
-        }, "*");
-    } 
-    else if (event.data === YT.PlayerState.PAUSED) {
-        parent.postMessage({
-            type: "paused"
-        }, "*");
-    }
-    else if (event.data === YT.PlayerState.ENDED) {
+    if (event.data === YT.PlayerState.ENDED) {
         parent.postMessage({
             type: "ended"
         }, "*");
     }
 }
-
-// Osluškivanje zahteva sa tvog lokalnog koda (Heartbeat provera)
-window.addEventListener("message", function(e) {
-    if (e.data.type === "get_time" && player && typeof player.getCurrentTime === "function") {
-        parent.postMessage({
-            type: "current_time_response",
-            time: player.getCurrentTime()
-        }, "*");
-    }
-});
-
-// Mrežni osluškivači unutar iframe-a
-window.addEventListener('offline', () => {
-    parent.postMessage({
-        type: "network_lost"
-    }, "*");
-});
-
-window.addEventListener('online', () => {
-    parent.postMessage({
-        type: "network_restored"
-    }, "*");
-});
 
 // Error Handling
 const errorMessages = {
@@ -117,6 +81,7 @@ function onError(event) {
         message: message 
     }, "*");
 }
+
 </script>
 
 </head>
