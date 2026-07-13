@@ -55,42 +55,45 @@ function onReady(event) {
 
 function onStateChange(event) {
     if (event.data === YT.PlayerState.PLAYING) {
-        // Video je krenuo -> Pokreni/nastavi tajmer na roditeljskoj stranici
         parent.postMessage({
             type: "playing"
         }, "*");
     } 
     else if (event.data === YT.PlayerState.BUFFERING) {
-        // Video je stao jer baferuje -> Zaustavi tajmer na roditeljskoj stranici
         parent.postMessage({
             type: "buffering"
         }, "*");
     } 
     else if (event.data === YT.PlayerState.PAUSED) {
-        // Korisnik je pauzirao video -> Zaustavi tajmer na roditeljskoj stranici
         parent.postMessage({
             type: "paused"
         }, "*");
     }
     else if (event.data === YT.PlayerState.ENDED) {
-        // Video je završen -> Zaustavi/resetuj tajmer na roditeljskoj stranici
         parent.postMessage({
             type: "ended"
         }, "*");
     }
 }
 
-// Mrežni osluškivači (za slučaj potpunog nestanka interneta)
+// Osluškivanje zahteva sa tvog lokalnog koda (Heartbeat provera)
+window.addEventListener("message", function(e) {
+    if (e.data.type === "get_time" && player && typeof player.getCurrentTime === "function") {
+        parent.postMessage({
+            type: "current_time_response",
+            time: player.getCurrentTime()
+        }, "*");
+    }
+});
+
+// Mrežni osluškivači unutar iframe-a
 window.addEventListener('offline', () => {
-    // Konekcija je pukla -> Zaustavi tajmer i obavesti korisnika
     parent.postMessage({
         type: "network_lost"
     }, "*");
 });
 
 window.addEventListener('online', () => {
-    // Mreža se vratila -> Ovde ne pokrećeš tajmer odmah, 
-    // već čekaš da plejer sam pređe u "playing" stanje i pošalje "playing" poruku
     parent.postMessage({
         type: "network_restored"
     }, "*");
