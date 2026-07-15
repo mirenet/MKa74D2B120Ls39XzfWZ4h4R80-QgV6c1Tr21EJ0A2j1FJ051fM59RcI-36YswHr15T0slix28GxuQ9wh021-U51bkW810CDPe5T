@@ -23,43 +23,70 @@ html, body {
 
 <script>
 let player;
+let heartbeatInterval = null;
 
 function getVideoId() {
     return new URLSearchParams(window.location.search).get("v");
 }
 
 function onYouTubeIframeAPIReady() {
-
     player = new YT.Player("player", {
         width: "100%",
         height: "100%",
         videoId: getVideoId(),
-
         playerVars: {
             autoplay: 1,
             controls: 0,
             rel: 0,
             playsinline: 1
         },
-
         events: {
             onReady: onReady,
             onStateChange: onStateChange,
             onError: onError 
         }
     });
-
 }
 
 function onReady(event) {
     event.target.playVideo();
 }
 
+// Funkcija koja šalje signal tvojoj glavnoj stranici svake sekunde dok video IDE
+function pokreniHeartbeat() {
+    if (heartbeatInterval) clearInterval(heartbeatInterval);
+    heartbeatInterval = setInterval(() => {
+        parent.postMessage({ type: "VIDEO_ALIVE" }, "*");
+    }, 1000);
+}
+
+function zaustaviHeartbeat() {
+    if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+        heartbeatInterval = null;
+    }
+}
+
 function onStateChange(event) {
-    if (event.data === YT.PlayerState.ENDED) {
-        parent.postMessage({
-            type: "ended"
-        }, "*");
+    // Ako video stvarno krene da se reprodukuje (PLAYING)
+    if (event.data === YT.PlayerState.PLAYING) {
+        pokreniHeartbeat();
+        parent.postMessage({ type: "playing" }, "*");
+    } 
+    // Ako video baferuje (BUFFERING - npr. spora mreža)
+    else if (event.data === YT.PlayerState.BUFFERING) {
+        zaustaviHeartbeat();
+        parent.postMessage({ type: "buffering" }, "*");
+    }
+    // Ako je video pauziran (PAUSED)
+    else if (event.data === YT.PlayerState.PAUSED) {
+        zaustaviHeartbeat();
+        parent.postMessage({ type: "paused" }, "*");
+    }
+    // Ako je video završen (ENDED)
+    else if (event.data === YT.PlayerState.ENDED) {
+        zaustaviHeartbeat();
+        parent.postMessage({ type: "ended" }, "*");
     }
 }
 
@@ -73,6 +100,7 @@ const errorMessages = {
 };
 
 function onError(event) {
+    zaustaviHeartbeat();
     const code = event.data;
     const message = errorMessages[code] || `Cant play video! (Error: ${code})`;
 
@@ -81,8 +109,8 @@ function onError(event) {
         message: message 
     }, "*");
 }
-
 </script>
+
 
 </head>
 <body>
