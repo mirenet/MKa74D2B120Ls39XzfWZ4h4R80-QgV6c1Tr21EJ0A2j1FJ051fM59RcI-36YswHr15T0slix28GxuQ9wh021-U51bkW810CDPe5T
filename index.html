@@ -23,7 +23,7 @@ html, body {
 
 <script>
 let player;
-let hasStarted = false;
+let playingInterval = null;
 
 function getVideoId() {
     return new URLSearchParams(window.location.search).get("v");
@@ -52,15 +52,34 @@ function onReady(event) {
     event.target.playVideo();
 }
 
+function startPlayingInterval() {
+    stopPlayingInterval(); // Čistimo prethodni interval ako je postojao
+    playingInterval = setInterval(() => {
+        parent.postMessage({ type: "video_playing" }, "*");
+    }, 500);
+}
+
+function stopPlayingInterval() {
+    if (playingInterval) {
+        clearInterval(playingInterval);
+        playingInterval = null;
+    }
+}
+
 function onStateChange(event) {
-    // Javlja samo jednom kada video stvarno krene
-    if (event.data === YT.PlayerState.PLAYING && !hasStarted) {
+    if (event.data === YT.PlayerState.PLAYING) {
+        // Obaveštavamo lokalni kod da je video krenuo/nastavio
         parent.postMessage({ type: "playing" }, "*");
-        hasStarted = true;
+        // Pokrećemo slanje pulsa pod nazivom "video_playing" na svakih 500ms
+        startPlayingInterval();
     } 
-    // Javlja kada se video završi
-    else if (event.data === YT.PlayerState.ENDED) {
-        parent.postMessage({ type: "ended" }, "*");
+    else {
+        // Za bilo koje drugo stanje odmah gasimo slanje pulsa
+        stopPlayingInterval();
+
+        if (event.data === YT.PlayerState.ENDED) {
+            parent.postMessage({ type: "ended" }, "*");
+        }
     }
 }
 
@@ -74,6 +93,7 @@ const errorMessages = {
 };
 
 function onError(event) {
+    stopPlayingInterval();
     const code = event.data;
     const message = errorMessages[code] || `Cant play video! (Error: ${code})`;
 
