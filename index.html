@@ -23,63 +23,43 @@ html, body {
 
 <script>
 let player;
-let playingInterval = null;
 
 function getVideoId() {
     return new URLSearchParams(window.location.search).get("v");
 }
 
 function onYouTubeIframeAPIReady() {
+
     player = new YT.Player("player", {
         width: "100%",
         height: "100%",
         videoId: getVideoId(),
+
         playerVars: {
             autoplay: 1,
             controls: 0,
             rel: 0,
             playsinline: 1
         },
+
         events: {
             onReady: onReady,
             onStateChange: onStateChange,
             onError: onError 
         }
     });
+
 }
 
 function onReady(event) {
     event.target.playVideo();
 }
 
-function startPlayingInterval() {
-    stopPlayingInterval(); // Čistimo prethodni interval ako je postojao
-    playingInterval = setInterval(() => {
-        parent.postMessage({ type: "video_playing" }, "*");
-    }, 500);
-}
-
-function stopPlayingInterval() {
-    if (playingInterval) {
-        clearInterval(playingInterval);
-        playingInterval = null;
-    }
-}
-
 function onStateChange(event) {
-    if (event.data === YT.PlayerState.PLAYING) {
-        // Obaveštavamo lokalni kod da je video krenuo/nastavio
-        parent.postMessage({ type: "playing" }, "*");
-        // Pokrećemo slanje pulsa pod nazivom "video_playing" na svakih 500ms
-        startPlayingInterval();
-    } 
-    else {
-        // Za bilo koje drugo stanje odmah gasimo slanje pulsa
-        stopPlayingInterval();
-
-        if (event.data === YT.PlayerState.ENDED) {
-            parent.postMessage({ type: "ended" }, "*");
-        }
+    if (event.data === YT.PlayerState.ENDED) {
+        parent.postMessage({
+            type: "ended"
+        }, "*");
     }
 }
 
@@ -93,7 +73,6 @@ const errorMessages = {
 };
 
 function onError(event) {
-    stopPlayingInterval();
     const code = event.data;
     const message = errorMessages[code] || `Cant play video! (Error: ${code})`;
 
@@ -102,6 +81,7 @@ function onError(event) {
         message: message 
     }, "*");
 }
+
 </script>
 
 </head>
